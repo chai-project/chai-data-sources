@@ -19,5 +19,5 @@ __all__ = [
     "EfergyError",
     "Minutes",
     "SetpointMode",
-    "DeviceType"
+    "DeviceType",
 ]
