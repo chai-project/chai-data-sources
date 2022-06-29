@@ -187,6 +187,7 @@ class NetatmoTests(unittest.TestCase):
                                       "time_server": 1653827076}, status_code=200)
 
             self.assertEqual(19.4, self.client.thermostat_temperature)
+            self.assertTrue(self.client.thermostat_on)
             self.assertEqual("70:ee:50:75:d2:a4", self.client.relay_id)
             self.assertEqual("04:00:00:75:d1:56", self.client.thermostat_id)
 
@@ -496,3 +497,74 @@ class NetatmoTests(unittest.TestCase):
 
             self.assertTrue(self.client.set_device(device=DeviceType.VALVE, mode=SetpointMode.MANUAL,
                                                    minutes=10, temperature=30))
+
+            mocker.register_uri("POST", "https://api.netatmo.com/api/homestatus",
+                                additional_matcher=post_body_helper({"home_id": "622f3a74b1a160470e1436ec"}),
+                                json={
+                                    "status": "ok",
+                                    "time_server": 1656400968,
+                                    "body": {
+                                        "home": {
+                                            "id": "622f3a74b1a160470e1436ec",
+                                            "rooms": [
+                                                {
+                                                    "id": "628179036",
+                                                    "reachable": True,
+                                                    "anticipating": False,
+                                                    "heating_power_request": 0,
+                                                    "open_window": False,
+                                                    "therm_measured_temperature": 19.4,
+                                                    "therm_setpoint_temperature": 19,
+                                                    "therm_setpoint_mode": "schedule"
+                                                },
+                                                {
+                                                    "id": "1940086014",
+                                                    "reachable": True,
+                                                    "anticipating": False,
+                                                    "heating_power_request": 100,
+                                                    "open_window": False,
+                                                    "therm_measured_temperature": 18,
+                                                    "therm_setpoint_temperature": 29.5,
+                                                    "therm_setpoint_start_time": 1656400407,
+                                                    "therm_setpoint_end_time": 1656411000,
+                                                    "therm_setpoint_mode": "manual"
+                                                }
+                                            ],
+                                            "modules": [
+                                                {
+                                                    "id": "70:ee:50:75:d2:a4",
+                                                    "type": "NAPlug",
+                                                    "firmware_revision": 222,
+                                                    "rf_strength": 104,
+                                                    "wifi_strength": 51
+                                                },
+                                                {
+                                                    "id": "04:00:00:75:d1:56",
+                                                    "type": "NATherm1",
+                                                    "battery_state": "high",
+                                                    "battery_level": 3901,
+                                                    "firmware_revision": 75,
+                                                    "rf_strength": 69,
+                                                    "reachable": True,
+                                                    "boiler_valve_comfort_boost": True,
+                                                    "bridge": "70:ee:50:75:d2:a4",
+                                                    "boiler_status": True
+                                                },
+                                                {
+                                                    "id": "09:00:00:15:7a:c2",
+                                                    "type": "NRV",
+                                                    "battery_state": "high",
+                                                    "battery_level": 2930,
+                                                    "firmware_revision": 85,
+                                                    "rf_strength": 65,
+                                                    "reachable": True,
+                                                    "bridge": "70:ee:50:75:d2:a4"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                status_code=200)
+
+            self.assertTrue(self.client.boiler_on)
+            self.assertTrue(self.client.valve_on)

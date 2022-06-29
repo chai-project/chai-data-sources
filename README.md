@@ -114,3 +114,12 @@ All three functions to set the status of a device report back a Boolean value. T
 
 > **No support for programs/schedules**<br>
 > The implementation only allows you to directly control a Netatmo device setpoint instead of through explicit schedules/programs. As a safety feature (?) it appears that the Netatmo API only allows schedules to be *created* or *selected*, **not** *changed* or *removed*. What happens when too many schedules are created is undefined.
+
+#### checking status
+Checking whether a thermostat, valve, or boiler is on is a jumbled task, **though one that is now mostly solved**. The `client` exposes the properties `thermostat_on`, `boiler_on`, and `valve_on`. Before using them, you should read this subsection to make sure you understand how these values are retrieved and what the limitations are.
+
+To determine whether the thermostat is on the instance retrieves the setpoint temperature as well as the current room temperature. Doing so is an expensive API call. For this reason checking whether a thermostat is on is behind a 15-second cache. In plain words: after turning a thermostat on, it may take 15 seconds before the `thermostat_on` property returns `True`. 
+
+To determine whether the boiler is on the instance relies on the home information. This is an *very* expensive series of API calls. For this reason checking whether a boiler is on is also behind a 15-second cache. In plain words: after the boiler is turned on (typically by the thermostat), it may take 15 seconds before the `boiler_on` property returns `True`.
+
+Checking whether a valve is on uses the same expensive series of API call as checking whether a boiler is on. It has the same 15-second cache approach, though checking whether the valve is on is *"free"* as part of checking whether the boiler is on (and vice versa). In addition, there is the property `valve_percentage` which reports the percentage of the valve that is open from 0 to 100. This value cannot be influenced directly and is only provided as information. 

@@ -11,7 +11,6 @@
 
 from __future__ import annotations
 
-# TODO: find a way to obtain the set temperature for the valve and thermostat (through _ThermostatsData?)
 import json
 import logging
 from dataclasses import dataclass
@@ -28,7 +27,7 @@ from chai_data_sources.device_temperature import DeviceTemperature, DeviceType
 from chai_data_sources.exceptions import NetatmoInvalidClientError, NetatmoInvalidTokenError, RequestException, \
     NetatmoConnectionError, NetatmoDataclassError, DaciteError, NetatmoJSONError, NetatmoUnknownError, \
     NetatmoThermostatError, NetatmoValveError, NetatmoRelayError, NetatmoMeasurementError, \
-    NetatmoInvalidDurationError, NetatmoInvalidTemperatureError
+    NetatmoInvalidDurationError, NetatmoInvalidTemperatureError, NetatmoBoilerError
 from chai_data_sources.historic_temperature import HistoricTemperature
 from chai_data_sources.utilities import timed_lru_cache, Minutes, round_date
 
@@ -276,6 +275,47 @@ class _SetpointChange:
     # time_server: int
 
 
+@dataclass
+class _HomeStatus:
+    status: str
+    # time_server: int
+    body: _HomeStatusBody
+
+
+@dataclass
+class _HomeStatusBody:
+    home: _HomeStatusEntry
+
+
+@dataclass
+class _HomeStatusEntry:
+    id: str
+    rooms: List[_HomeStatusRoom]
+    modules: List[_HomeStatusModule]
+
+
+@dataclass
+class _HomeStatusRoom:
+    id: str
+    reachable: bool
+    anticipating: bool
+    heating_power_request: int
+    open_window: bool
+    therm_measured_temperature: float
+    therm_setpoint_temperature: float
+    therm_setpoint_mode: str
+
+
+@dataclass
+class _HomeStatusModule:
+    id: str
+    type: str
+    # firmware_revision: int
+    # rf_strength: int
+    # wifi_strength: Optional[int]
+    boiler_status: Optional[bool]
+
+
 # MARK: main Netatmo instance
 
 
@@ -293,6 +333,11 @@ class NetatmoClient:
     _home_id: Optional[str] = None
     _room_id: Optional[str] = None
     _valve_id: Optional[str] = None
+
+    _thermostat_on: Optional[bool] = None
+    _boiler_on: Optional[bool] = None
+    _valve_on: Optional[bool] = None
+    _valve_percentage: Optional[int] = None
 
     def __init__(self, *, client_id: str, client_secret: str, refresh_token: str,
                  oauth: str = "https://api.netatmo.com/oauth2",
@@ -334,12 +379,41 @@ class NetatmoClient:
         return self._thermostat_id
 
     @property
+    @timed_lru_cache(15)
+    def thermostat_on(self) -> bool:
+        """ The state of the Netatmo thermostat. """
+        # always get the latest thermostat information
+        self._get_thermostat_data()
+        return self._thermostat_on
+
+    @property
     def valve_id(self) -> str:
         """ The ID of the Netatmo thermostatic valve. """
         if not self._valve_id:
             log.debug("valve information not set; retrieving ...")
             self._get_home_data()
         return self._valve_id
+
+    @property
+    @timed_lru_cache(15)
+    def boiler_on(self) -> bool:
+        """ The state of the (simulated/assumed) boiler. """
+        self._get_boiler_status()
+        return self._boiler_on
+
+    @property
+    @timed_lru_cache(15)
+    def valve_on(self) -> bool:
+        """ The state of the Netatmo thermostatic valve. """
+        self._get_boiler_status()
+        return self._valve_on
+
+    @property
+    @timed_lru_cache(15)
+    def valve_percentage(self) -> int:
+        """ The percentage of the Netatmo thermostatic valve. """
+        self._get_boiler_status()
+        return self._valve_percentage
 
     @property
     def home_id(self) -> str:
@@ -444,10 +518,11 @@ class NetatmoClient:
 
         if not relay.modules or len(relay.modules) > 1:
             raise NetatmoThermostatError
-        valve = relay.modules[0]
+        thermostat = relay.modules[0]
 
         self._relay_id = relay.id
-        self._thermostat_id = valve.id
+        self._thermostat_id = thermostat.id
+        self._thermostat_on = thermostat.measured.temperature < thermostat.measured.setpoint_temp
 
         log.info("identified the relay as %s and the thermostat as %s", self._relay_id, self._thermostat_id)
 
@@ -471,6 +546,26 @@ class NetatmoClient:
         self._room_id = room.id
 
         log.info("identified the valve as %s", self._valve_id)
+
+    def _get_boiler_status(self):
+        data: _HomeStatus = self._access_server(endpoint="/homestatus", payload={"home_id": self._home_id},
+                                                data_class=_HomeStatus, config=Config({DateTime: from_timestamp}))
+        log.debug("Access to the boiler status has been granted.")
+
+        home = data.body.home
+        room = [room for room in home.rooms if self._room_id == room.id]
+        boiler = [module for module in home.modules if module.type == "NATherm1"]
+        if len(room) != 1:
+            raise NetatmoBoilerError
+        if len(boiler) != 1:
+            raise NetatmoBoilerError
+        room = room[0]
+        boiler = boiler[0]
+        if boiler.boiler_status is None:
+            raise NetatmoBoilerError
+        self._boiler_on = boiler.boiler_status
+        self._valve_on = room.therm_setpoint_temperature > room.therm_measured_temperature
+        self._valve_percentage = room.heating_power_request
 
     # MARK: public functions
 

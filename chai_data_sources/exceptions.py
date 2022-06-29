@@ -88,6 +88,10 @@ class NetatmoValveError(NetatmoError):  # an issue occurred when trying to ident
     pass
 
 
+class NetatmoBoilerError(NetatmoError):  # an issue occurred when trying to identify the boiler status
+    pass
+
+
 class NetatmoMeasurementError(NetatmoError):  # expected a single measure, but got zero or multiple
     pass
 
