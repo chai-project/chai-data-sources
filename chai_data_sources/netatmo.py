@@ -483,14 +483,14 @@ class NetatmoClient:
         if not payload:
             payload = {}
         payload["access_token"] = self.access_token if self.access_token else ""
-        log.debug("accessing endpoint {url} with payload %s", json.dumps(payload))
+        log.debug("accessing endpoint %s with payload %s", url, json.dumps(payload))
         try:
             response = requests.post(url, payload)
             if response.status_code == 403:  # our token may have expired
                 log.debug("  an authentication error occurred; trying to renew the access token")
                 self._renewal()  # try renewing it
                 payload["access_token"] = self.access_token  # change to the new access token
-                log.debug("  trying request again with access token %s", {payload['access_token']})
+                log.debug("  trying request again with access token %s", payload['access_token'])
                 response = requests.post(url, payload)
             response.raise_for_status()
         except RequestException as exc:
