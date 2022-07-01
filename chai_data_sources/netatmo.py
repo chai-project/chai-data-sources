@@ -548,7 +548,7 @@ class NetatmoClient:
         log.info("identified the valve as %s", self._valve_id)
 
     def _get_boiler_status(self):
-        data: _HomeStatus = self._access_server(endpoint="/homestatus", payload={"home_id": self._home_id},
+        data: _HomeStatus = self._access_server(endpoint="/homestatus", payload={"home_id": self.home_id},
                                                 data_class=_HomeStatus, config=Config({DateTime: from_timestamp}))
         log.debug("Access to the boiler status has been granted.")
 
