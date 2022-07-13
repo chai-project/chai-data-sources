@@ -289,14 +289,14 @@ class _HomeStatusBody:
 
 @dataclass
 class _HomeStatusEntry:
-    id: str
+    id: str  # pylint: disable=invalid-name
     rooms: List[_HomeStatusRoom]
     modules: List[_HomeStatusModule]
 
 
 @dataclass
-class _HomeStatusRoom:
-    id: str
+class _HomeStatusRoom:  # pylint: disable=too-many-instance-attributes
+    id: str  # pylint: disable=invalid-name
     reachable: bool
     anticipating: bool
     heating_power_request: int
@@ -308,7 +308,7 @@ class _HomeStatusRoom:
 
 @dataclass
 class _HomeStatusModule:
-    id: str
+    id: str  # pylint: disable=invalid-name
     type: str
     # firmware_revision: int
     # rf_strength: int
