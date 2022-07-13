@@ -11,13 +11,13 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, List, Dict, TypeVar, Type, Tuple, Any
 
 import dacite
+import orjson as json
 import pendulum
 import requests
 from dacite import Config
@@ -458,14 +458,14 @@ class NetatmoClient:
                     raise NetatmoInvalidClientError
                 if result.status_code == 400 and json.loads(result.text) == {"error": "invalid_grant"}:
                     raise NetatmoInvalidTokenError
-            except json.decoder.JSONDecodeError:
+            except json.JSONDecodeError:
                 pass  # ignore JSON decode errors when dealing with 400 errors and raise the normal status error instead
             result.raise_for_status()
         except RequestException as exc:
             raise NetatmoConnectionError(exc) from exc
         try:
-            json_result = result.json()
-        except json.decoder.JSONDecodeError as exc:
+            json_result = json.loads(result.text)
+        except json.JSONDecodeError as exc:
             raise NetatmoJSONError from exc
         try:
             data: _TokenRefreshResult = dacite.from_dict(data_class=_TokenRefreshResult, data=json_result)
@@ -498,8 +498,8 @@ class NetatmoClient:
         if not response or not response.text:
             raise NetatmoUnknownError(response.request.url)
         try:
-            json_data = response.json()
-        except json.decoder.JSONDecodeError as exc:
+            json_data = json.loads(response.text)
+        except json.JSONDecodeError as exc:
             raise NetatmoJSONError from exc
         try:
             data: T = dacite.from_dict(data_class=data_class, data=json_data, config=config if config else Config())

@@ -5,12 +5,12 @@
 # for a given endpoint, the argument accepts that particular datatype.
 from __future__ import annotations
 
-import json
 import logging
 from dataclasses import dataclass
 from time import sleep
 from typing import List, Dict, Optional, Iterable, Any
 
+import orjson as json
 import requests
 from dacite import Config, from_dict
 from pendulum import DateTime
@@ -78,8 +78,8 @@ class EfergyMeter:
         if not response or not response.text:
             raise EfergyUnknownError(response.request.url)
         try:
-            json_data = response.json()
-        except json.decoder.JSONDecodeError as exc:
+            json_data = json.loads(response.text)
+        except json.JSONDecodeError as exc:
             raise EfergyJSONError from exc
         return json_data
 

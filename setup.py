@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name="chai-data-sources",
     packages=["chai_data_sources"],
-    version="0.1.0",
+    version="0.9.0",
     description="Access the Efergy and Netatmo API to interface with the energy meter, thermostat, "
                 "and thermostatic values.",
     author="Kim Bauters",
@@ -13,7 +13,7 @@ setup(
                       "requests",  # handle, and mock, API requests
                       "dacite",  # convert dictionaries to dataclass instances
                       "requests-mock",  # test code using requests in a reliable and repeatable way
-                      # could be used in the future for faster performance: "ujson",  # fast JSON encoder and decoder
+                      "orjson",  # fast(est) JSON encoder and decoder
                       ],
     classifiers=[],
     include_package_data=True,
