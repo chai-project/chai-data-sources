@@ -20,8 +20,8 @@ from urllib.parse import urlparse, parse_qs
 import dacite
 import requests
 
-from exceptions import DaciteError
-from utilities import optional
+from chai_data_sources.exceptions import DaciteError
+from chai_data_sources.utilities import optional
 
 REQUEST_ID = str(uuid.uuid4()).strip()  # shared id to process a request for a user code
 httpd: Optional[HTTPServer] = None  # shared server to be able to shut it down
