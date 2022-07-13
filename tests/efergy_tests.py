@@ -35,6 +35,9 @@ class EfergyTests(unittest.TestCase):
             with self.assertRaises(EfergyServerError):
                 _ = self.alt_server_meter.get_current()  # call to invalid endpoint throws error
 
+            # renew the meter instance to avoid getting a cached valid response
+            self.meter = EfergyMeter(token="valid-mock-token")
+
             # create an invalid empty response
             mocker.register_uri("GET", valid_endpoint, text="", status_code=200)
 
