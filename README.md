@@ -96,7 +96,7 @@ This instance provides the historic temperature for the given interval in Celsiu
 
 #### setting values
 
-Using `client` you can also change the setting of the thermostat or the valve. The easiest option is to turn on/off the device. This sets the temperature to 30 °C, or 7 °C, respectively. All requests to turn the heat up require and end time which defaults to 24 hours. For the thermostat, and only when turning the thermostat off, the change persists beyond 24h. The behaviour after the 24h is that the thermostat and valve return to their previous non-overridden state. This can be program mode or frost protection mode. 
+Using `client` you can also change the setting of the thermostat or the valve. The easiest option is to turn on/off the device. This sets the temperature to 30 °C, or 7 °C, respectively. All requests to turn the heat up require an end time which defaults to 24 hours. For the thermostat, and only when turning the thermostat off, the change persists beyond 24h. The behaviour after the 24h is that the thermostat and valve return to their previous non-overridden state. This can be program mode or frost protection mode. 
 
     client.turn_off_device(DeviceType.THERMOSTAT)
     client.turn_on_device(DeviceType.VALVE, minutes=60)
