@@ -112,6 +112,8 @@ class NetatmoInvalidTokenError(NetatmoError):  # the token is invalid or does no
     pass
 
 
+# dataclass errors indicate that the data received from the API is incorrect or incomplete,
+# which could happen when for example the Netatmo thermostatic valve is not accessible or registered
 class NetatmoDataclassError(NetatmoError):  # the received data could not be transformed to the expected dataclass
     def __init__(self, error: DaciteError):
         self.upstream_error = error

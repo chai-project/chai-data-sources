@@ -17,6 +17,7 @@ from enum import Enum
 from typing import Optional, List, Dict, TypeVar, Type, Tuple, Any
 
 import dacite
+from dacite.exceptions import MissingValueError as DaciteMissingValueError
 import orjson as json
 import pendulum
 import requests
@@ -503,7 +504,7 @@ class NetatmoClient:
             raise NetatmoJSONError from exc
         try:
             data: T = dacite.from_dict(data_class=data_class, data=json_data, config=config if config else Config())
-        except DaciteError as exc:
+        except (DaciteError, DaciteMissingValueError) as exc:
             raise NetatmoDataclassError(exc) from exc
         return data
 
