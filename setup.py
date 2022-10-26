@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name="chai-data-sources",
     packages=["chai_data_sources"],
-    version="0.9.0",
+    version="0.9.1",
     description="Access the Efergy and Netatmo API to interface with the energy meter, thermostat, "
                 "and thermostatic values.",
     author="Kim Bauters",
