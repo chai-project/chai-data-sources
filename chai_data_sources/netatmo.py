@@ -540,7 +540,7 @@ class NetatmoClient:
         if len(valves) != 1:
             raise NetatmoValveError
         self._valve_id = valves[0].id
-        room = [room for room in user_home.rooms if self._valve_id in room.module_ids]
+        room = [room for room in user_home.rooms if room.module_ids and self._valve_id in room.module_ids]
         if len(room) != 1:
             raise NetatmoValveError
         room = room[0]
@@ -766,4 +766,13 @@ class NetatmoClient:
 
 
 if __name__ == "__main__":
-    pass
+    client = NetatmoClient(
+        client_id="5a339be00d0e23c02e8b65d5",
+        client_secret="eQdExiY8mdk6WNa2UJ44PdLL6",
+        refresh_token="6320954e74321f66d80de342|b1e890476de25591e9beeedaddc7859b"
+    )
+    # client.set_device(device=DeviceType.VALVE, mode=SetpointMode.MANUAL, temperature=20, minutes=60)
+    print(client.thermostat_temperature)
+    print(client.valve_temperature)
+    print(client.valve_percentage)
+    print(client.valve_on)
