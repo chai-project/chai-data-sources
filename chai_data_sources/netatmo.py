@@ -35,6 +35,7 @@ from chai_data_sources.utilities import timed_lru_cache, Minutes, round_date
 log = logging.getLogger(__name__)  # get a module-level logger
 
 T = TypeVar("T")
+TIMEOUT = 15  # timeout used by requests in seconds
 
 
 class SetpointMode(Enum):
@@ -453,7 +454,7 @@ class NetatmoClient:
             "refresh_token": self.refresh_token
         }
         try:
-            result = requests.post(f"{self.oauth}/token", data=payload)
+            result = requests.post(f"{self.oauth}/token", data=payload, timeout=TIMEOUT)
             try:
                 if result.status_code == 400 and json.loads(result.text) == {"error": "invalid_client"}:
                     raise NetatmoInvalidClientError
@@ -486,13 +487,13 @@ class NetatmoClient:
         payload["access_token"] = self.access_token if self.access_token else ""
         log.debug("accessing endpoint %s with payload %s", url, json.dumps(payload))
         try:
-            response = requests.post(url, payload)
+            response = requests.post(url, payload, timeout=TIMEOUT)
             if response.status_code == 403:  # our token may have expired
                 log.debug("  an authentication error occurred; trying to renew the access token")
                 self._renewal()  # try renewing it
                 payload["access_token"] = self.access_token  # change to the new access token
                 log.debug("  trying request again with access token %s", payload['access_token'])
-                response = requests.post(url, payload)
+                response = requests.post(url, payload, timeout=TIMEOUT)
             response.raise_for_status()
         except RequestException as exc:
             raise NetatmoConnectionError(exc) from exc
