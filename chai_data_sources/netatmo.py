@@ -537,7 +537,7 @@ class NetatmoClient:
             raise NetatmoValveError
         user_home = data.body.homes[0]
         self._home_id = user_home.id
-        valves = [module for module in user_home.modules if module.type == "NRV"]
+        valves = [module for module in user_home.modules if user_home.modules and module.type == "NRV"]
         if len(valves) != 1:
             raise NetatmoValveError
         self._valve_id = valves[0].id
@@ -556,7 +556,7 @@ class NetatmoClient:
 
         home = data.body.home
         room = [room for room in home.rooms if self._room_id == room.id]
-        boiler = [module for module in home.modules if module.type == "NATherm1"]
+        boiler = [module for module in home.modules if home.modules and module.type == "NATherm1"]
         if len(room) != 1:
             raise NetatmoBoilerError
         if len(boiler) != 1:
