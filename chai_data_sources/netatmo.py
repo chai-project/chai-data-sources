@@ -119,6 +119,7 @@ class _RoomZone:
 class _RoomTherm:
     # pylint: disable=invalid-name,too-many-instance-attributes
     id: int
+    therm_measured_temperature: float
     therm_setpoint_temperature: float
 
 
@@ -340,6 +341,7 @@ class NetatmoClient:
     _boiler_on: Optional[bool] = None
     _valve_on: Optional[bool] = None
     _valve_percentage: Optional[int] = None
+    _t3_temperature: Optional[float] = None
 
     def __init__(self, *, client_id: str, client_secret: str, refresh_token: str,
                  oauth: str = "https://api.netatmo.com/oauth2",
@@ -442,6 +444,13 @@ class NetatmoClient:
     def valve_temperature(self) -> float:
         """ The temperature reported by the Netatmo thermostatic valve. """
         return self.get_measurement(thermostat=False).value
+
+    @property
+    @timed_lru_cache(15)
+    def t3_temperature(self) -> float:
+        """ The derived room temperature; not as accurate as thermostat but more accurate than valve. """
+        self._get_boiler_status()
+        return self._t3_temperature
 
     # MARK: support functions
 
@@ -568,6 +577,7 @@ class NetatmoClient:
         self._boiler_on = boiler.boiler_status
         self._valve_on = room.therm_setpoint_temperature > room.therm_measured_temperature
         self._valve_percentage = room.heating_power_request
+        self._t3_temperature = room.therm_measured_temperature
 
     # MARK: public functions
 
@@ -776,4 +786,5 @@ if __name__ == "__main__":
     print(client.thermostat_temperature)
     print(client.valve_temperature)
     print(client.valve_percentage)
+    print(client.t3_temperature)
     print(client.valve_on)
