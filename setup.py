@@ -4,8 +4,7 @@ setup(
     name="chai-data-sources",
     packages=["chai_data_sources"],
     version="0.9.3",
-    description="Access the Efergy and Netatmo API to interface with the energy meter, thermostat, "
-                "and thermostatic values.",
+    description="Access the Netatmo API to interface with the thermostat and thermostatic valves.",
     author="Kim Bauters",
     author_email="kim.bauters@bristol.ac.uk",
     license="Protected",
