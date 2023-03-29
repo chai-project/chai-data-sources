@@ -90,12 +90,12 @@ class _Home:
     # coordinates: List[float]
     # country: str
     # timezone: str
-    rooms: List[_Room]
-    modules: List[_RoomModule]
+    rooms: Optional[List[_Room]]
+    modules: Optional[List[_RoomModule]]
     # therm_set_point_default_duration: Optional[int]
     # therm_boost_default_duration: Optional[int]
     # schedule: Optional[List[RoomSchedule]]
-    therm_mode: str
+    therm_mode: Optional[str]
 
 
 @dataclass
